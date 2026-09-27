@@ -3,6 +3,8 @@ import { generateKey, revokeLicense, activateLicenseAgain, deleteLicense, revoke
 import { Key, Monitor, PowerOff, Trash2, Zap, ShieldAlert, CheckCircle2, UserCircle, Calendar, PlusCircle } from 'lucide-react';
 import { RowDataPacket } from 'mysql2';
 
+export const dynamic = 'force-dynamic';
+
 interface ILicense extends RowDataPacket {
   id: string;
   key: string;
