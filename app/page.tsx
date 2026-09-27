@@ -1,12 +1,18 @@
-import prisma from '@/lib/prisma';
+import pool from '@/lib/db';
 import { generateKey, revokeLicense, activateLicenseAgain, deleteLicense, revokeDevice, unrevokeDevice } from './actions';
 import { Key, Monitor, PowerOff, Trash2, Zap, ShieldAlert, CheckCircle2, UserCircle, Calendar, PlusCircle } from 'lucide-react';
+import { RowDataPacket } from 'mysql2';
 
 export default async function AdminDashboard() {
-  const licenses = await prisma.license.findMany({
-    include: { devices: true },
-    orderBy: { createdAt: 'desc' }
-  });
+  const [licenses] = await pool.query<RowDataPacket[]>('SELECT * FROM License ORDER BY createdAt DESC');
+  const [devices] = await pool.query<RowDataPacket[]>('SELECT * FROM Device');
+
+  // Map devices to their respective licenses
+  const licensesWithDevices = licenses.map(license => ({
+    ...license,
+    devices: devices.filter(d => d.licenseId === license.id)
+  }));
+
 
   return (
     <div className="min-h-screen bg-[#050505] text-gray-200 font-sans selection:bg-indigo-500/30">
@@ -90,18 +96,18 @@ export default async function AdminDashboard() {
           <div className="flex items-center justify-between mb-2">
             <h2 className="text-2xl font-bold text-white">Active Licenses</h2>
             <div className="text-sm font-medium text-indigo-400 bg-indigo-500/10 px-4 py-1.5 rounded-full border border-indigo-500/20">
-              Total: {licenses.length}
+              Total: {licensesWithDevices.length}
             </div>
           </div>
 
-          {licenses.length === 0 ? (
+          {licensesWithDevices.length === 0 ? (
              <div className="bg-white/[0.02] border border-white/5 rounded-3xl p-12 text-center flex flex-col items-center justify-center">
                 <Key className="w-12 h-12 text-gray-600 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-300">No licenses yet</h3>
                 <p className="text-gray-500 mt-2">Generate your first license key to get started.</p>
              </div>
           ) : (
-            licenses.map(license => (
+            licensesWithDevices.map(license => (
               <div key={license.id} className="bg-white/[0.03] border border-white/5 rounded-3xl p-6 backdrop-blur-sm hover:bg-white/[0.04] transition-colors group">
                 {/* License Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
