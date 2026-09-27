@@ -3,9 +3,28 @@ import { generateKey, revokeLicense, activateLicenseAgain, deleteLicense, revoke
 import { Key, Monitor, PowerOff, Trash2, Zap, ShieldAlert, CheckCircle2, UserCircle, Calendar, PlusCircle } from 'lucide-react';
 import { RowDataPacket } from 'mysql2';
 
+interface ILicense extends RowDataPacket {
+  id: string;
+  key: string;
+  status: string;
+  maxDevices: number;
+  expiresAt: string | null;
+  createdAt: string;
+  customerName: string;
+}
+
+interface IDevice extends RowDataPacket {
+  id: string;
+  licenseId: string;
+  hardwareId: string;
+  deviceName: string;
+  lastActive: string;
+  isRevoked: boolean;
+}
+
 export default async function AdminDashboard() {
-  const [licenses] = await pool.query<RowDataPacket[]>('SELECT * FROM License ORDER BY createdAt DESC');
-  const [devices] = await pool.query<RowDataPacket[]>('SELECT * FROM Device');
+  const [licenses] = await pool.query<ILicense[]>('SELECT * FROM License ORDER BY createdAt DESC');
+  const [devices] = await pool.query<IDevice[]>('SELECT * FROM Device');
 
   // Map devices to their respective licenses
   const licensesWithDevices = licenses.map(license => ({

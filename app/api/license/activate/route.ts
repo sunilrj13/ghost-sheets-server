@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'Missing key or hardwareId' }, { status: 400 });
     }
 
-    const [licenseRows] = await pool.query<RowDataPacket[]>('SELECT * FROM License WHERE `key` = ?', [key]);
+    const [licenseRows] = await pool.query<any[]>('SELECT * FROM License WHERE `key` = ?', [key]);
     
     if (licenseRows.length === 0) {
       return NextResponse.json({ success: false, message: 'Invalid License Key' }, { status: 404 });
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // Check devices
-    const [deviceRows] = await pool.query<RowDataPacket[]>('SELECT * FROM Device WHERE licenseId = ?', [license.id]);
+    const [deviceRows] = await pool.query<any[]>('SELECT * FROM Device WHERE licenseId = ?', [license.id]);
     
     const existingDevice = deviceRows.find(d => d.hardwareId === hardwareId);
     
